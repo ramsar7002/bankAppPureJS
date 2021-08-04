@@ -34,6 +34,7 @@ const account4 = {
 };
 
 const accounts = [account1, account2, account3, account4];
+let currentActiveAccount = null
 
 // Elements
 const labelWelcome = document.querySelector('.welcome');
@@ -74,13 +75,13 @@ const currencies = new Map([
 const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 
 /////////////////////////////////////////////////
+//Display the moveements on the screen
 const displayMovments = movements => {
   containerMovements.innerHTML = '';
   movements.forEach((mov, i) => {
     const html = `<div class="movements__row">
-                    <div class="movements__type movements__type--${
-                      mov > 0 ? 'deposit' : 'withdrawal'
-                    }">
+                    <div class="movements__type movements__type--${mov > 0 ? 'deposit' : 'withdrawal'
+      }">
                         ${i + 1}: ${mov > 0 ? 'DEPOSIT' : 'WITHDRAWAL'}
                     </div>
                     <div class="movements__date">24/01/2037</div>
@@ -92,6 +93,7 @@ const displayMovments = movements => {
 
 displayMovments(account1.movements);
 
+//calculate the incomes, outcomes and interest
 const calculateincomesOutComesAndInterest = accounts => {
   accounts.forEach(account => {
     let movements = account.movements;
@@ -105,20 +107,35 @@ const calculateincomesOutComesAndInterest = accounts => {
     account.interest = movements
       .filter(mov => mov > 0)
       .map(mov => (mov * 1.2) / 100)
+      .filter(mov => mov > 1)
       .reduce((acc, cur) => acc + cur);
+
+    account.currentBalance = account.movements.reduce((acc, cur) => {
+      return acc + cur
+    })
   });
+
+
+
 };
 
 calculateincomesOutComesAndInterest(accounts);
 
+//show thr incomes, outcomes, intersts on the screeen
 const calcDisplayBalance = account => {
   labelSumIn.textContent = `${account.incomes}€`;
   labelSumOut.textContent = `${account.outcomes}€`;
   labelSumInterest.textContent = `${account.interest}€`;
+  labelBalance.textContent = `${account.currentBalance}€`;
+  //labelBalance
 };
 
-calcDisplayBalance(account1);
 
+
+
+
+
+//Create Users
 const createUsers = accounts => {
   accounts.map(account => {
     let user = account.owner;
@@ -136,8 +153,58 @@ const createUsers = accounts => {
 
 createUsers(accounts);
 
+//Convert euros to usd
 const eurToUsd = 1.1;
 const totalDepositInUSD = movements
   .filter(mov => mov > 0)
   .map(mov => mov * eurToUsd)
   .reduce((acc, mov) => acc + mov, 0);
+
+
+//Login to account logic
+
+btnLogin.addEventListener('click', (e) => {
+  e.preventDefault()
+  const userName = inputLoginUsername.value;
+  const pin = Number(inputLoginPin.value)
+
+  accounts.forEach(account => {
+    if (account.userName === userName && account.pin === pin) {
+      calcDisplayBalance(account);
+      containerApp.style.opacity = 1
+      labelWelcome.textContent = `Welcome back ${account.owner.split(' ')[0]}`
+      inputLoginUsername.value = ''
+      inputLoginPin.value = ''
+      inputLoginUsername.blur()
+      inputLoginPin.blur()
+      currentActiveAccount = account;
+    }
+  })
+})
+
+//Transfer Money
+btnTransfer.addEventListener('click', (e) => {
+  e.preventDefault();
+  const to = inputTransferTo.value
+  const amount = Number(inputTransferAmount.value)
+  console.log(to, amount)
+
+  if (amount < currentActiveAccount.currentBalance) {
+    const accountFound = accounts.find(acc => {
+      return acc.owner === to;
+    })
+    console.log(accountFound)
+
+    if (!accountFound) {
+      alert('Account not found');
+    }
+    else {
+      accountFound.movements.push(amount);
+      currentActiveAccount.movements.push(-1 * amount);
+      calculateincomesOutComesAndInterest(accounts);
+      calcDisplayBalance(currentActiveAccount);
+
+    }
+  }
+
+})
