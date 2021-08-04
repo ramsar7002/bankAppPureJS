@@ -84,13 +84,40 @@ const displayMovments = movements => {
                         ${i + 1}: ${mov > 0 ? 'DEPOSIT' : 'WITHDRAWAL'}
                     </div>
                     <div class="movements__date">24/01/2037</div>
-                    <div class="movements__value">${mov}</div>
+                    <div class="movements__value">${mov}€</div>
                 </div>`;
     containerMovements.insertAdjacentHTML('afterBegin', html);
   });
 };
 
 displayMovments(account1.movements);
+
+const calculateincomesOutComesAndInterest = accounts => {
+  accounts.forEach(account => {
+    let movements = account.movements;
+    account.incomes = movements
+      .filter(mov => mov > 0)
+      .reduce((acc, cur) => acc + cur, 0);
+
+    account.outcomes = Math.abs(
+      movements.filter(mov => mov < 0).reduce((acc, cur) => acc + cur, 0)
+    );
+    account.interest = movements
+      .filter(mov => mov > 0)
+      .map(mov => (mov * 1.2) / 100)
+      .reduce((acc, cur) => acc + cur);
+  });
+};
+
+calculateincomesOutComesAndInterest(accounts);
+
+const calcDisplayBalance = account => {
+  labelSumIn.textContent = `${account.incomes}€`;
+  labelSumOut.textContent = `${account.outcomes}€`;
+  labelSumInterest.textContent = `${account.interest}€`;
+};
+
+calcDisplayBalance(account1);
 
 const createUsers = accounts => {
   accounts.map(account => {
@@ -108,3 +135,9 @@ const createUsers = accounts => {
 };
 
 createUsers(accounts);
+
+const eurToUsd = 1.1;
+const totalDepositInUSD = movements
+  .filter(mov => mov > 0)
+  .map(mov => mov * eurToUsd)
+  .reduce((acc, mov) => acc + mov, 0);
