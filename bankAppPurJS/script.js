@@ -77,7 +77,7 @@ const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 
 /////////////////////////////////////////////////
 //Display the moveements on the screen
-const displayMovments = movements => {
+const displayMovments = (movements, sort = false) => {
   containerMovements.innerHTML = '';
   movements.forEach((mov, i) => {
     const html = `<div class="movements__row">
@@ -292,6 +292,8 @@ const owners = ['Ram', 'Zach', 'Adam', 'Martha'];
 
 const movs = movements;
 movs.sort((a, b) => {
-  return a > b ? 1 : -1;
+  //return a > b ? 1 : -1;
+  return a - b;
 });
-console.log(movs);
+
+//Sort the movments
