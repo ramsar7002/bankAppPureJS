@@ -325,7 +325,10 @@ const r = Array.from({ length: 100 }, (cur, i) => {
 //console.log(r);
 
 labelBalance.addEventListener('click', () => {
-  const movmentsUI = Array.from(document.querySelectorAll('.movements__value'));
+  const movmentsUI = Array.from(
+    document.querySelectorAll('.movements__value'),
+    el => Number(el.textContent.replace('€', ''))
+  );
 
-  console.log(movmentsUI.map(el => el.textContent.replace('€', '')));
+  console.log(movmentsUI);
 });
