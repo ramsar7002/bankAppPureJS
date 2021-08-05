@@ -93,32 +93,39 @@ const displayMovments = movements => {
   });
 };
 
-//calculate the incomes, outcomes and interest
+//calculate calculate the incomes, outcomes and interest for a single account
+const calculateincomesOutComesAndInterestUnique = account => {
+  const movements = account.movements;
+
+  account.incomes = movements
+    .filter(mov => mov > 0)
+    .reduce((acc, cur) => acc + cur, 0);
+
+  account.outcomes = Math.abs(
+    movements.filter(mov => mov < 0).reduce((acc, cur) => acc + cur, 0)
+  );
+
+  account.interest = movements
+    .filter(mov => mov > 0)
+    .map(mov => (mov * 1.2) / 100)
+    .filter(mov => mov > 1)
+    .reduce((acc, cur) => acc + cur);
+
+  account.currentBalance = account.movements.reduce((acc, cur) => {
+    return acc + cur;
+  });
+};
+
+//calculate the incomes, outcomes and interest for all accounts
 const calculateincomesOutComesAndInterest = accounts => {
   accounts.forEach(account => {
-    let movements = account.movements;
-    account.incomes = movements
-      .filter(mov => mov > 0)
-      .reduce((acc, cur) => acc + cur, 0);
-
-    account.outcomes = Math.abs(
-      movements.filter(mov => mov < 0).reduce((acc, cur) => acc + cur, 0)
-    );
-    account.interest = movements
-      .filter(mov => mov > 0)
-      .map(mov => (mov * 1.2) / 100)
-      .filter(mov => mov > 1)
-      .reduce((acc, cur) => acc + cur);
-
-    account.currentBalance = account.movements.reduce((acc, cur) => {
-      return acc + cur;
-    });
+    calculateincomesOutComesAndInterestUnique(account);
   });
 };
 
 calculateincomesOutComesAndInterest(accounts);
 
-//show thr incomes, outcomes, intersts on the screeen
+//show incomes, outcomes, intersts on the screeen
 const calcDisplayBalance = account => {
   labelSumIn.textContent = `${account.incomes}€`;
   labelSumOut.textContent = `${account.outcomes}€`;
@@ -153,18 +160,18 @@ const totalDepositInUSD = movements
   .reduce((acc, mov) => acc + mov, 0);
 
 //Login to account logic
-
 btnLogin.addEventListener('click', e => {
   e.preventDefault();
   const userName = inputLoginUsername.value;
   const pin = Number(inputLoginPin.value);
+  inputLoginUsername.value = '';
+  inputLoginPin.value = '';
 
   accounts.forEach((account, index) => {
     if (account.userName === userName && account.pin === pin) {
       containerApp.style.opacity = 1;
       labelWelcome.textContent = `Welcome back ${account.owner.split(' ')[0]}`;
-      inputLoginUsername.value = '';
-      inputLoginPin.value = '';
+
       inputLoginUsername.blur();
       inputLoginPin.blur();
       currentActiveAccount = account;
@@ -172,6 +179,9 @@ btnLogin.addEventListener('click', e => {
       calculateincomesOutComesAndInterest(accounts);
       calcDisplayBalance(currentActiveAccount);
       displayMovments(currentActiveAccount.movements);
+    } else {
+      if (index === accounts.length - 1)
+        alert('Username or password are incorrect');
     }
   });
 });
@@ -215,14 +225,14 @@ const accountDisplayOff = account => {
   labelBalance.textContent = `0€`;
 };
 
-//Show errorMessage under close account
-const closeAccount = err => {
+//Show errorMessage
+const showError = (cl, err) => {
   document
-    .querySelector('.operation--close')
-    .insertAdjacentHTML('beforeEnd', `<div class="errMessage">${err}</div>`);
+    .querySelector(`.${cl}`)
+    .insertAdjacentHTML('beforeEnd', `<div class="errorMes">${err}</div>`);
 
   setTimeout(() => {
-    document.querySelector('.errMessage').innerHTML = '';
+    document.querySelector(`.errorMes`).innerHTML = '';
   }, 3000);
 };
 
@@ -241,7 +251,10 @@ btnClose.addEventListener('click', e => {
   });
   if (index != -1) {
     if (currentActiveAccountIndex !== index) {
-      closeAccount('You should connect to your account and then delete it');
+      showError(
+        'operation--close',
+        'You should connect to your account and then delete it'
+      );
     } else {
       accounts = accounts.filter((acc, i) => {
         return index != i;
@@ -249,6 +262,6 @@ btnClose.addEventListener('click', e => {
       accountDisplayOff(currentActiveAccount);
     }
   } else {
-    closeAccount('Could not find account or incorrect pin');
+    showError('operation--close', 'Could not find account or incorrect pin');
   }
 });
