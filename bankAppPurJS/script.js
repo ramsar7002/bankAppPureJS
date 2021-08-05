@@ -180,7 +180,7 @@ btnLogin.addEventListener('click', e => {
       calcDisplayBalance(currentActiveAccount);
       displayMovments(currentActiveAccount.movements);
     } else {
-      if (index === accounts.length - 1)
+      if (index === accounts.length - 1 && currentActiveAccountIndex === -1)
         alert('Username or password are incorrect');
     }
   });
@@ -263,5 +263,21 @@ btnClose.addEventListener('click', e => {
     }
   } else {
     showError('operation--close', 'Could not find account or incorrect pin');
+  }
+});
+
+//Request a loan
+btnLoan.addEventListener('click', e => {
+  e.preventDefault();
+  const amount = Number(inputLoanAmount.value);
+  inputLoanAmount.value = '';
+  const canGetALoan = currentActiveAccount.movements.some(mov => {
+    return mov >= amount * 0.1;
+  });
+
+  if (canGetALoan) {
+    currentActiveAccount.movements.push(amount);
+    calcDisplayBalance(currentActiveAccount);
+    displayMovments(currentActiveAccount.movements);
   }
 });
