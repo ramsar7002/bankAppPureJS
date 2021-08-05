@@ -77,9 +77,18 @@ const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 
 /////////////////////////////////////////////////
 //Display the moveements on the screen
+let sorttedasc = false;
 const displayMovments = (movements, sort = false) => {
   containerMovements.innerHTML = '';
-  movements.forEach((mov, i) => {
+
+  //Check if want to sort
+  const movs = sort
+    ? sorttedasc
+      ? movements.slice().sort((a, b) => b - a)
+      : movements.slice().sort((a, b) => a - b)
+    : movements;
+  if (sort) sorttedasc = !sorttedasc;
+  movs.forEach((mov, i) => {
     const html = `<div class="movements__row">
                     <div class="movements__type movements__type--${
                       mov > 0 ? 'deposit' : 'withdrawal'
@@ -297,3 +306,11 @@ movs.sort((a, b) => {
 });
 
 //Sort the movments
+btnSort.addEventListener('click', e => {
+  e.preventDefault();
+  displayMovments(currentActiveAccount.movements, true);
+});
+
+const x = new Array(7);
+x.fill(1, 3, 4);
+console.log(x);
