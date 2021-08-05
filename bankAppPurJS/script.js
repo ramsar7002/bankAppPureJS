@@ -311,6 +311,21 @@ btnSort.addEventListener('click', e => {
   displayMovments(currentActiveAccount.movements, true);
 });
 
+//Get UI movments to the program
 const x = new Array(7);
-x.fill(1, 3, 4);
-console.log(x);
+//x.fill(1, 3, 4);
+//const y = Array.from({ length: 7 }, () => 1);
+
+const z = Array.from({ length: 7 }, (cur, i) => i + 1);
+//console.log(z);
+
+const r = Array.from({ length: 100 }, (cur, i) => {
+  return (cur = Math.floor(Math.random() * 100));
+});
+//console.log(r);
+
+labelBalance.addEventListener('click', () => {
+  const movmentsUI = Array.from(document.querySelectorAll('.movements__value'));
+
+  console.log(movmentsUI.map(el => el.textContent.replace('€', '')));
+});
