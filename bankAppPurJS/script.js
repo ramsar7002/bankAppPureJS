@@ -33,8 +33,9 @@ const account4 = {
   pin: 4444,
 };
 
-const accounts = [account1, account2, account3, account4];
-let currentActiveAccount = null
+let accounts = [account1, account2, account3, account4];
+let currentActiveAccount = null;
+let currentActiveAccountIndex = -1;
 
 // Elements
 const labelWelcome = document.querySelector('.welcome');
@@ -80,8 +81,9 @@ const displayMovments = movements => {
   containerMovements.innerHTML = '';
   movements.forEach((mov, i) => {
     const html = `<div class="movements__row">
-                    <div class="movements__type movements__type--${mov > 0 ? 'deposit' : 'withdrawal'
-      }">
+                    <div class="movements__type movements__type--${
+                      mov > 0 ? 'deposit' : 'withdrawal'
+                    }">
                         ${i + 1}: ${mov > 0 ? 'DEPOSIT' : 'WITHDRAWAL'}
                     </div>
                     <div class="movements__date">24/01/2037</div>
@@ -90,8 +92,6 @@ const displayMovments = movements => {
     containerMovements.insertAdjacentHTML('afterBegin', html);
   });
 };
-
-displayMovments(account1.movements);
 
 //calculate the incomes, outcomes and interest
 const calculateincomesOutComesAndInterest = accounts => {
@@ -111,12 +111,9 @@ const calculateincomesOutComesAndInterest = accounts => {
       .reduce((acc, cur) => acc + cur);
 
     account.currentBalance = account.movements.reduce((acc, cur) => {
-      return acc + cur
-    })
+      return acc + cur;
+    });
   });
-
-
-
 };
 
 calculateincomesOutComesAndInterest(accounts);
@@ -129,11 +126,6 @@ const calcDisplayBalance = account => {
   labelBalance.textContent = `${account.currentBalance}€`;
   //labelBalance
 };
-
-
-
-
-
 
 //Create Users
 const createUsers = accounts => {
@@ -160,51 +152,103 @@ const totalDepositInUSD = movements
   .map(mov => mov * eurToUsd)
   .reduce((acc, mov) => acc + mov, 0);
 
-
 //Login to account logic
 
-btnLogin.addEventListener('click', (e) => {
-  e.preventDefault()
+btnLogin.addEventListener('click', e => {
+  e.preventDefault();
   const userName = inputLoginUsername.value;
-  const pin = Number(inputLoginPin.value)
+  const pin = Number(inputLoginPin.value);
 
-  accounts.forEach(account => {
+  accounts.forEach((account, index) => {
     if (account.userName === userName && account.pin === pin) {
-      calcDisplayBalance(account);
-      containerApp.style.opacity = 1
-      labelWelcome.textContent = `Welcome back ${account.owner.split(' ')[0]}`
-      inputLoginUsername.value = ''
-      inputLoginPin.value = ''
-      inputLoginUsername.blur()
-      inputLoginPin.blur()
+      containerApp.style.opacity = 1;
+      labelWelcome.textContent = `Welcome back ${account.owner.split(' ')[0]}`;
+      inputLoginUsername.value = '';
+      inputLoginPin.value = '';
+      inputLoginUsername.blur();
+      inputLoginPin.blur();
       currentActiveAccount = account;
+      currentActiveAccountIndex = index;
+      calculateincomesOutComesAndInterest(accounts);
+      calcDisplayBalance(currentActiveAccount);
+      displayMovments(currentActiveAccount.movements);
     }
-  })
-})
+  });
+});
 
 //Transfer Money
-btnTransfer.addEventListener('click', (e) => {
+btnTransfer.addEventListener('click', e => {
   e.preventDefault();
-  const to = inputTransferTo.value
-  const amount = Number(inputTransferAmount.value)
-  console.log(to, amount)
+  const to = inputTransferTo.value;
+  const amount = Number(inputTransferAmount.value);
+  console.log(to, amount);
 
   if (amount < currentActiveAccount.currentBalance) {
     const accountFound = accounts.find(acc => {
       return acc.owner === to;
-    })
-    console.log(accountFound)
+    });
+    console.log(accountFound);
 
     if (!accountFound) {
       alert('Account not found');
-    }
-    else {
+    } else {
+      inputTransferTo.value = '';
+      inputTransferAmount.value = '';
+      inputTransferTo.blur();
+      inputTransferAmount.blur();
       accountFound.movements.push(amount);
       currentActiveAccount.movements.push(-1 * amount);
-      calculateincomesOutComesAndInterest(accounts);
-      calcDisplayBalance(currentActiveAccount);
-
+      setTimeout(() => {
+        calculateincomesOutComesAndInterest(accounts);
+        calcDisplayBalance(currentActiveAccount);
+        displayMovments(currentActiveAccount.movements);
+      }, 2000);
     }
   }
+});
+//remove accountDisplay from app
+const accountDisplayOff = account => {
+  document.querySelector('.app').style.opacity = 0;
+  labelSumIn.textContent = `0€`;
+  labelSumOut.textContent = `0€`;
+  labelSumInterest.textContent = `0}€`;
+  labelBalance.textContent = `0€`;
+};
 
-})
+//Show errorMessage under close account
+const closeAccount = err => {
+  document
+    .querySelector('.operation--close')
+    .insertAdjacentHTML('beforeEnd', `<div class="errMessage">${err}</div>`);
+
+  setTimeout(() => {
+    document.querySelector('.errMessage').innerHTML = '';
+  }, 3000);
+};
+
+//Close account
+btnClose.addEventListener('click', e => {
+  e.preventDefault();
+  const user = inputCloseUsername.value;
+  const pin = Number(inputClosePin.value);
+  inputCloseUsername.value = '';
+  inputClosePin.value = '';
+  inputCloseUsername.blur();
+  inputClosePin.blur();
+
+  const index = accounts.findIndex(account => {
+    return account.userName === user && account.pin === pin;
+  });
+  if (index != -1) {
+    if (currentActiveAccountIndex !== index) {
+      closeAccount('You should connect to your account and then delete it');
+    } else {
+      accounts = accounts.filter((acc, i) => {
+        return index != i;
+      });
+      accountDisplayOff(currentActiveAccount);
+    }
+  } else {
+    closeAccount('Could not find account or incorrect pin');
+  }
+});
