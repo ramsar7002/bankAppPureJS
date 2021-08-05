@@ -281,3 +281,17 @@ btnLoan.addEventListener('click', e => {
     displayMovments(currentActiveAccount.movements);
   }
 });
+
+//Compute overall balance for the bank
+const overallBalance = accounts
+  .map(acc => acc.movements)
+  .flat()
+  .reduce((acc, cur) => acc + cur);
+
+const owners = ['Ram', 'Zach', 'Adam', 'Martha'];
+
+const movs = movements;
+movs.sort((a, b) => {
+  return a > b ? 1 : -1;
+});
+console.log(movs);
