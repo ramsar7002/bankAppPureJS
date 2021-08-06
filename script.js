@@ -12,13 +12,13 @@ const account1 = {
   pin: 1111,
 
   movementsDates: [
-    '2019-11-18T21:31:17.178Z',
+    '2021-08-04T21:31:17.178Z',
     '2019-12-23T07:42:02.383Z',
     '2020-01-28T09:15:04.904Z',
     '2020-04-01T10:17:24.185Z',
     '2020-05-08T14:11:59.604Z',
     '2020-05-27T17:01:17.194Z',
-    '2020-07-11T23:36:17.929Z',
+    '2021-08-05T23:36:17.929Z',
     '2020-07-12T10:51:36.790Z',
   ],
   currency: 'EUR',
@@ -121,14 +121,28 @@ const inputClosePin = document.querySelector('.form__input--pin');
 
 //return full date as string
 const getFullDate = (account, i)=>{
-  const now = new Date(account.movementsDates[i]);
-  const day = `${now.getDay()+1}`.padStart(2,'0')
-  const month = `${now.getMonth()+1}`.padStart(2,'0')
-  const year = now.getFullYear();
-  const hour = `${now.getHours()}`.padStart(2,'0')
-  const minutes = `${now.getMinutes()}`.padStart(2,'0')
-  const nowStr = `${day}/${month}/${year}`
+  const date = new Date(account.movementsDates[i]);
+  const day = `${date.getDay()+1}`.padStart(2,'0')
+  const month = `${date.getMonth()+1}`.padStart(2,'0')
+  const year = date.getFullYear();
+  let nowStr = `${day}/${month}/${year}`
   
+  let now = new Date();
+  const calcDate = (now-date)/ (1000*60*60*24)
+
+  if(calcDate<1){
+    nowStr='Today'
+  }
+  else
+  if(calcDate<2){
+    nowStr='Yesterday'
+  }
+  else if(calcDate<3){
+    nowStr='2 Days ago'
+  }
+
+
+
   return nowStr;
 }
 
@@ -304,7 +318,7 @@ btnTransfer.addEventListener('click', e => {
       currentActiveAccount.movementsDates.push(new Date().toISOString());
 
       setTimeout(() => {
-        calculateincomesOutComesAndInterest(accounts);
+        calculateincomesOutComesAndInterestUnique(currentActiveAccount);
         calcDisplayBalance(currentActiveAccount);
         displayMovments(currentActiveAccount);
       }, 2000);
