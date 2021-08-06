@@ -252,6 +252,32 @@ const totalDepositInUSD = movements
   .map(mov => mov * eurToUsd)
   .reduce((acc, mov) => acc + mov, 0);
 
+  //Start a timer 
+  const startLogOutTimer = ()=>{
+    //Set time to 5 minute
+    let time = 300;
+    //Call the timer every second
+    let countdown = setInterval(() => {
+
+      let min = Math.floor(time / 60);
+      // define our seconds by modulating time with 60, our seconds units
+      let sec = time % 60;
+      
+      // tenerary conditional to see if seconds is set to 0 for proper display of formatting as seconds 
+      sec = sec < 10 ? '0' + sec : sec;
+      labelTimer.textContent=`${min}:${sec}`;
+      time--;
+
+      if(min===0 && sec===0){
+        clearInterval(countdown);
+        containerApp.style.opacity=0;
+        currentActiveAccount=null;
+      }
+
+    }, 1000);
+
+  }
+
 //Login to account logic
 btnLogin.addEventListener('click', e => {
   e.preventDefault();
@@ -283,6 +309,7 @@ btnLogin.addEventListener('click', e => {
     
       labelDate.textContent=nowStr
 
+      startLogOutTimer();
       
     } else {
       if (index === accounts.length - 1 && currentActiveAccountIndex === -1)
